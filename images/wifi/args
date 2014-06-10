@@ -1,0 +1,1 @@
+--privileged --net host -v $CONFDIR/wpa_supplicant.conf:/wpa_supplicant.conf -v /dev/rfkill:/dev/rfkill -t -i

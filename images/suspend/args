@@ -1,0 +1,1 @@
+-v /sys/power/state:/sys/power/state

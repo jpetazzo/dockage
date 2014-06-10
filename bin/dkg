@@ -1,0 +1,74 @@
+#!/bin/sh
+if [ "$DEBUG" -gt 0 ] 2>/dev/null
+then
+	set -x
+fi
+
+COMMAND="$1"
+TARGET="$2"
+ROOTDIR="$(dirname "$(readlink -f "$0")")/.."
+CONFDIR="$ROOTDIR/conf"
+
+if ! [ "$COMMAND" ] 
+then
+	echo "You must specify a command"
+	exit 1
+fi
+
+if ! [ "$TARGET" ]
+then
+	WORKDIR="$(pwd)"
+	TARGET="$(basename "$WORKDIR")"
+	
+else
+	WORKDIR="$ROOTDIR/images/$TARGET"
+	if ! [ -d "$WORKDIR" ]
+	then
+		echo "Could not find $TARGET in images directory"
+		exit 1
+	fi
+fi
+
+if ! [ -f "$WORKDIR/Dockerfile" ]
+then
+	echo "No Dockerfile in $WORKDIR."
+	echo "Try one of those:"
+	ls "$ROOTDIR/images"
+	exit 1
+fi
+
+dkg_up () {
+	docker build -t "i-$TARGET" "$WORKDIR"
+	ARGS=""
+	[ -f "$WORKDIR/args" ] && ARGS="$(eval echo $(cat "$WORKDIR/args"))"
+	if docker inspect c-$TARGET 2>/dev/null
+	then
+		docker start c-$TARGET
+	else
+		docker run -d --name c-$TARGET $ARGS i-$TARGET
+	fi
+}
+
+dkg_down () {
+	docker stop "c-$TARGET"
+	docker rm "c-$TARGET"
+	docker rmi "i-$TARGET"
+}
+
+case "$COMMAND" in
+	up)
+		dkg_up
+		;;
+	refresh)
+		dkg_down
+		dkg_up
+		;;
+	enter)
+		CPID=$(docker inspect --format '{{.State.Pid}}' "c-$TARGET")
+		nsenter -t $CPID -m -u -i -n -p
+		;;
+	*)
+		echo "Unknown command $COMMAND"
+		exit 1
+		;;
+esac
