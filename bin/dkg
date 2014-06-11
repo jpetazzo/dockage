@@ -41,7 +41,7 @@ dkg_up () {
 	docker build -t "i-$TARGET" "$WORKDIR"
 	ARGS=""
 	[ -f "$WORKDIR/args" ] && ARGS="$(eval echo $(cat "$WORKDIR/args"))"
-	if docker inspect c-$TARGET 2>/dev/null
+	if docker inspect c-$TARGET >/dev/null 2>/dev/null
 	then
 		docker start c-$TARGET
 	else
