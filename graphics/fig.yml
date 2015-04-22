@@ -1,0 +1,22 @@
+x:
+  image: busybox
+  command: sh -c "while true; do sleep 1000000; done"
+  volumes:
+    - /tmp/X11-unix:/tmp/.X11-unix
+
+xorg:
+  build: xorg
+  privileged: true
+  net: host
+  volumes:
+    - /dev/dri:/dev/dri
+    - /dev/input:/dev/input
+    - /run/udev:/run/udev
+  volumes_from:
+    - x
+
+awesome:
+  build: awesome
+  volumes_from:
+    - x
+

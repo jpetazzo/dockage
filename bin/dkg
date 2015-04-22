@@ -41,31 +41,32 @@ dkg_up () {
 	docker build -t "i-$TARGET" "$WORKDIR"
 	ARGS=""
 	[ -f "$WORKDIR/args" ] && ARGS="$(eval echo $(cat "$WORKDIR/args"))"
-	if docker inspect c-$TARGET >/dev/null 2>/dev/null
+	if docker inspect $TARGET >/dev/null 2>/dev/null
 	then
-		docker start c-$TARGET
+		docker start $TARGET
 	else
-		docker run -d --name c-$TARGET $ARGS i-$TARGET
+		docker run -d --name $TARGET $ARGS i-$TARGET
 	fi
 }
 
 dkg_down () {
-	docker stop "c-$TARGET"
-	docker rm "c-$TARGET"
+	docker stop "$TARGET"
+	docker rm "$TARGET"
 	docker rmi "i-$TARGET"
 }
 
 case "$COMMAND" in
 	up)
-		dkg_up
-		;;
-	refresh)
 		dkg_down
 		dkg_up
 		;;
 	enter)
-		CPID=$(docker inspect --format '{{.State.Pid}}' "c-$TARGET")
+		CPID=$(docker inspect --format '{{.State.Pid}}' "$TARGET")
 		nsenter -t $CPID -m -u -i -n -p
+		;;
+	debug)
+		[ -f "$WORKDIR/args" ] && ARGS="$(eval echo $(cat "$WORKDIR/args"))"
+		docker run -t -i $ARGS --entrypoint bash i-$TARGET -i
 		;;
 	*)
 		echo "Unknown command $COMMAND"

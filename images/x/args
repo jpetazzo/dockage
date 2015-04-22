@@ -1,1 +1,0 @@
---privileged --net host -v /dev/dri/:/dev/dri/ -v /dev/input/:/dev/input/ -v /tmp/.X11-unix/:/tmp/.X11-unix/ -v /run/udev:/run/udev

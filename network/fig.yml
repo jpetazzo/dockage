@@ -1,0 +1,14 @@
+wifi:
+  build: wifi
+  privileged: true
+  net: host
+  volumes:
+    - ../conf/wpa_supplicant.conf:/wpa_supplicant.conf
+    - /dev/rfkill:/dev/rfkill
+
+wlan0:
+  build: wlan0
+  privileged: true
+  net: host
+
+  
